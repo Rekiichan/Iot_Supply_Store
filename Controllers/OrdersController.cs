@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using IotSupplyStore.DataAccess;
 using IotSupplyStore.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IotSupplyStore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = "Customer")]
     public class OrdersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;

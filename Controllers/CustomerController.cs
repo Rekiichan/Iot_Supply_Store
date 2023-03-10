@@ -2,6 +2,7 @@
 using IotSupplyStore.Models;
 using IotSupplyStore.Models.UpsertModel;
 using IotSupplyStore.Models.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
