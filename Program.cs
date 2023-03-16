@@ -1,5 +1,7 @@
 using IotSupplyStore.DataAccess;
 using IotSupplyStore.Models;
+using IoTSupplyStore.Models;
+using IotSupplyStore.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Configuration;
 using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -15,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 // "DevelopEnvironment" is using for database of developer, change it to "DefaultConnection" if want to use database server
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(
     builder.Configuration.GetConnectionString("DevelopEnvironment")));
+    builder.Configuration.GetSection("EmailSettings");
 
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {

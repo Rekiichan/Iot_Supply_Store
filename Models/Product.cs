@@ -27,7 +27,6 @@ namespace IotSupplyStore.Models
         public Category Category { get; set; }
       
         public ICollection<ProductOrder> ProductOrders { get; set; }
-
         public DetailProduct DetailProduct { get; set; }
         public ICollection<DetailProduct> DetailProductId { get; set; }
     }
