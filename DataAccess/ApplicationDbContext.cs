@@ -21,6 +21,10 @@ namespace IotSupplyStore.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Product>()
+            .HasMany(p => p.DetailProductId) // Product có nhiều DetailProduct
+            .WithOne(d => d.Product) // Mỗi DetailProduct chỉ thuộc về một Product
+            .HasForeignKey(d => d.ProductId);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace IotSupplyStore.Service
             emailMessage.From.Add(new MailboxAddress("email", _emailConfig.From));
             emailMessage.To.AddRange(message.To);
             emailMessage.Subject = message.Subject;
-            emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Text) { Text = message.Content };
+            emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = string.Format("<h1>Register Success!</h1><button>Change Password</button>", message.Content) };
 
             return emailMessage;
         }
