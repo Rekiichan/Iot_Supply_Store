@@ -17,7 +17,7 @@ namespace IotSupplyStore.Service
             _settings = settings.Value;
         }
 
-        public async Task<bool> SendAsync(MailData mailData, CancellationToken ct = default)
+        public async Task<bool> SendAsync(EmailDto mailData, CancellationToken ct = default)
         {
             try
             {

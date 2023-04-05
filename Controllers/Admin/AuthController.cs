@@ -251,13 +251,16 @@ namespace IotSupplyStore.Controllers.Admin
                     return BadRequest("this email has not been already exist");
                 }
 
+                string link = "";
                 string subject = "Please reset password";
-                string body = $"Hi {user.FullName},\r\nWe received a request to reset your Thuphigiaothong.com password.\r\nPlease click this Link: {model.Link} to reset your password\r\nAlternatively, you can directly change your password.";
                 string toName = user.FullName;
                 string toEmailAddress = user.Email;
                 string displayName = "Iot Device Store";
+                string body = $"Hi {user.FullName},\r\nWe received a request to reset your Thuphigiaothong.com password." +
+                    $"\r\nPlease click this Link: {link} " +
+                    $"to reset your password\r\nAlternatively, you can directly change your password.";
 
-                MailData mailData = new MailData(
+                EmailDto mailData = new EmailDto(
                     to: new List<string>()
                     {
                         toEmailAddress

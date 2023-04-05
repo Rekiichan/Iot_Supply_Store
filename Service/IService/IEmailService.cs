@@ -4,6 +4,6 @@ namespace IotSupplyStore.Service.IService
 {
     public interface IMailService
     {
-        Task<bool> SendAsync(MailData mailData, CancellationToken ct);
+        Task<bool> SendAsync(EmailDto mailData, CancellationToken ct);
     }
 }
