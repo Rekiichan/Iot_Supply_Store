@@ -28,11 +28,11 @@ builder.Services.AddEndpointsApiExplorer();
 // "DevelopEnvironment" is using for database of developer, change it to "DefaultConnection" if want to use database server
 #region Database configuration
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(
-    builder.Configuration.GetConnectionString("DefaultConnection")));
-
 //builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(
-//    builder.Configuration.GetConnectionString("DevelopEnvironment")));
+//    builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(
+    builder.Configuration.GetConnectionString("DevelopEnvironment")));
 
 #endregion
 
@@ -110,7 +110,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(SD.Policy_SuperAdmin, policyBuilder =>
     {
         policyBuilder.RequireAuthenticatedUser();
-        policyBuilder.RequireRole(SD.Role_Admin);
+        //policyBuilder.RequireRole(SD.Role_Admin);
         policyBuilder.RequireClaim("FullName", "Dao Trong Nhan");
     });
 

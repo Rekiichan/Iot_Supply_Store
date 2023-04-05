@@ -2,17 +2,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.EntityFrameworkCore;
 using IotSupplyStore.Utility;
-using IotSupplyStore.DataAccess;
 using IotSupplyStore.Models.DtoModel;
 using IotSupplyStore.Models;
 using IotSupplyStore.Service.IService;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Security.Claims;
-using IotSupplyStore.Repository;
 using IotSupplyStore.Repository.IRepository;
+using IotSupplyStore.Repository;
 
 namespace IotSupplyStore.Controllers.Admin
 {
@@ -22,7 +20,7 @@ namespace IotSupplyStore.Controllers.Admin
     public class AuthController : ControllerBase
     {
         private string secretKey;
-        private readonly IUnitOfWork _unitOfwork;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailService _emailService;
@@ -30,7 +28,7 @@ namespace IotSupplyStore.Controllers.Admin
             UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager,
             IEmailService emailService)
         {
-            _unitOfwork = unitOfWork;
+            _unitOfWork = unitOfWork;
             secretKey = options.GetValue<string>("ApiSettings:Secret");
             _userManager = userManager;
             _roleManager = roleManager;
@@ -71,7 +69,7 @@ namespace IotSupplyStore.Controllers.Admin
         [HttpPost("register/customer")] //For Customer
         public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegisterRequestDTO model)
         {
-            ApplicationUser userFromDb = await _unitOfwork.ApplicationUser.GetFirstOrDefaultAsync(u => u.UserName.ToLower() == model.UserName.ToLower(), false);
+            ApplicationUser userFromDb = await _unitOfWork.ApplicationUser.GetFirstOrDefaultAsync(u => u.UserName.ToLower() == model.UserName.ToLower(), false);
             if (userFromDb != null)
             {
                 return BadRequest("This user has already exist!!!");
@@ -107,10 +105,11 @@ namespace IotSupplyStore.Controllers.Admin
             return BadRequest("Failed to register new user!");
         }
 
+        [Authorize(Policy = SD.Policy_AccountManager)]
         [HttpPost("register/employee")]
         public async Task<IActionResult> RegisterEmployee(int EmployeeRequestId)
         {
-            var empRequest = await _unitOfwork.EmployeeRequest.GetFirstOrDefaultAsync(u => u.Id == EmployeeRequestId);
+            var empRequest = await _unitOfWork.EmployeeRequest.GetFirstOrDefaultAsync(u => u.Id == EmployeeRequestId);
             if (empRequest == null)
             {
                 return NotFound($"Cannot find this employee with id {EmployeeRequestId}");
@@ -152,8 +151,8 @@ namespace IotSupplyStore.Controllers.Admin
                     {
                         return BadRequest("this role isn't support at the moment");
                     }
-                    _unitOfwork.EmployeeRequest.Remove(empRequest);
-                    await _unitOfwork.Save();
+                    _unitOfWork.EmployeeRequest.Remove(empRequest);
+                    await _unitOfWork.Save();
                     return Ok("registered");
                 }
             }
@@ -164,10 +163,24 @@ namespace IotSupplyStore.Controllers.Admin
             return BadRequest("please re-check the information");
         }
 
+        [HttpPost("reject/employee/{id}")]
+        public async Task<IActionResult> RejectEmployee(int id)
+        {
+            var employeeReject = await _unitOfWork.EmployeeRequest.GetFirstOrDefaultAsync(u => u.Id == id);
+            if (employeeReject == null)
+            {
+                ModelState.AddModelError("error", "Nhân viên này không ở trong danh sách chờ, vui lòng kiểm tra lại");
+                return BadRequest(ModelState);
+            }
+            _unitOfWork.EmployeeRequest.Remove(employeeReject);
+            await _unitOfWork.Save();
+            return Ok();
+        }
+
         [HttpGet("get-list-employee-requests")]
         public async Task<IActionResult> GetListEmployeeRequests()
         {
-            var empRequest = await _unitOfwork.EmployeeRequest.GetAllAsync();
+            var empRequest = await _unitOfWork.EmployeeRequest.GetAllAsync();
             if (empRequest == null)
             {
                 return BadRequest("No employee request found");
@@ -180,7 +193,7 @@ namespace IotSupplyStore.Controllers.Admin
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO model)
         {
-            ApplicationUser userFromDb = await _unitOfwork.ApplicationUser.GetFirstOrDefaultAsync(u => u.UserName.ToLower() == model.UserName.ToLower());
+            ApplicationUser userFromDb = await _unitOfWork.ApplicationUser.GetFirstOrDefaultAsync(u => u.UserName.ToLower() == model.UserName.ToLower());
             bool isValid = await _userManager.CheckPasswordAsync(userFromDb, model.Password);
             if (isValid == false)
             {
@@ -230,7 +243,7 @@ namespace IotSupplyStore.Controllers.Admin
         {
             if (IsValidEmail(model.Email))
             {
-                var user = await _unitOfwork.ApplicationUser.GetFirstOrDefaultAsync(x => x.Email == model.Email, false);
+                var user = await _unitOfWork.ApplicationUser.GetFirstOrDefaultAsync(x => x.Email == model.Email, false);
                 if (user == null)
                 {
                     return BadRequest("this email has not been already exist");
@@ -254,7 +267,7 @@ namespace IotSupplyStore.Controllers.Admin
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword(ResetPassword model)
         {
-            var applicationUser = await _unitOfwork.ApplicationUser.GetFirstOrDefaultAsync(u => u.Email.ToLower() == model.Email.ToLower(), false);
+            var applicationUser = await _unitOfWork.ApplicationUser.GetFirstOrDefaultAsync(u => u.Email.ToLower() == model.Email.ToLower(), false);
             if (applicationUser == null)
             {
                 return BadRequest("cant find this user");
