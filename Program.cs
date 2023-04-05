@@ -13,6 +13,7 @@ using System.Text;
 using IotSupplyStore.Repository.IRepository;
 using IotSupplyStore.Repository;
 using IotSupplyStore.Utility;
+using IotSupplyStore.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,8 +23,10 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ContractResolver = new DefaultContractResolver();
     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
 });
+
 builder.Services.AddResponseCaching();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection(nameof(MailSettings)));
 
 // "DevelopEnvironment" is using for database of developer, change it to "DefaultConnection" if want to use database server
 #region Database configuration
@@ -40,7 +43,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 #region DI Service
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddTransient<IMailService, MailService>();
 
 #endregion
 

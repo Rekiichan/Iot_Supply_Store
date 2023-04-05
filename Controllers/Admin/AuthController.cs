@@ -11,6 +11,7 @@ using System.Text;
 using System.Security.Claims;
 using IotSupplyStore.Repository.IRepository;
 using IotSupplyStore.Repository;
+using Org.BouncyCastle.Asn1.Pkcs;
 
 namespace IotSupplyStore.Controllers.Admin
 {
@@ -23,10 +24,10 @@ namespace IotSupplyStore.Controllers.Admin
         private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IEmailService _emailService;
+        private readonly IMailService _emailService;
         public AuthController(IUnitOfWork unitOfWork, IConfiguration options,
             UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager,
-            IEmailService emailService)
+            IMailService emailService)
         {
             _unitOfWork = unitOfWork;
             secretKey = options.GetValue<string>("ApiSettings:Secret");
@@ -193,7 +194,7 @@ namespace IotSupplyStore.Controllers.Admin
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO model)
         {
-            ApplicationUser userFromDb = await _unitOfWork.ApplicationUser.GetFirstOrDefaultAsync(u => u.UserName.ToLower() == model.UserName.ToLower());
+            var userFromDb = await _unitOfWork.ApplicationUser.GetFirstOrDefaultAsync(u => u.UserName == model.UserName);
             bool isValid = await _userManager.CheckPasswordAsync(userFromDb, model.Password);
             if (isValid == false)
             {
@@ -256,9 +257,25 @@ namespace IotSupplyStore.Controllers.Admin
                     Subject = "Please reset password",
                     Body = $"Hi {user.FullName},\r\nWe received a request to reset your Thuphigiaothong.com password.\r\nPlease click this Link: {model.Link} to reset your password\r\nAlternatively, you can directly change your password."
                 };
-
-                await _emailService.SendMail(emailRequest);
-                return Ok("sent");
+                MailData mailData = new MailData(
+                    to: new List<string>()
+                    {
+                        model.Email
+                    },
+                    subject: emailRequest.Subject, 
+                    body: emailRequest.Body,
+                    displayName: "Rekiichan"
+                    );
+                bool result = await _emailService.SendAsync(mailData, new CancellationToken());
+                //await _emailService.SendMail(emailRequest);
+                if (result)
+                {
+                    return StatusCode(StatusCodes.Status200OK, "Mail has successfully been sent.");
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, "An error occured. The Mail could not be sent.");
+                }
             }
             return BadRequest($"{model.Email} is an invalid Email address");
         }
