@@ -12,6 +12,7 @@ using System.Security.Claims;
 using IotSupplyStore.Repository.IRepository;
 using IotSupplyStore.Repository;
 using Org.BouncyCastle.Asn1.Pkcs;
+using System.Security;
 
 namespace IotSupplyStore.Controllers.Admin
 {
@@ -250,24 +251,24 @@ namespace IotSupplyStore.Controllers.Admin
                     return BadRequest("this email has not been already exist");
                 }
 
-                EmailDto emailRequest = new EmailDto()
-                {
-                    ToName = user.FullName,
-                    ToEmailAddress = model.Email,
-                    Subject = "Please reset password",
-                    Body = $"Hi {user.FullName},\r\nWe received a request to reset your Thuphigiaothong.com password.\r\nPlease click this Link: {model.Link} to reset your password\r\nAlternatively, you can directly change your password."
-                };
+                string subject = "Please reset password";
+                string body = $"Hi {user.FullName},\r\nWe received a request to reset your Thuphigiaothong.com password.\r\nPlease click this Link: {model.Link} to reset your password\r\nAlternatively, you can directly change your password.";
+                string toName = user.FullName;
+                string toEmailAddress = user.Email;
+                string displayName = "Iot Device Store";
+
                 MailData mailData = new MailData(
                     to: new List<string>()
                     {
-                        model.Email
+                        toEmailAddress
                     },
-                    subject: emailRequest.Subject, 
-                    body: emailRequest.Body,
-                    displayName: "Rekiichan"
+                    subject: subject, 
+                    body: body,
+                    displayName: displayName 
                     );
+
                 bool result = await _emailService.SendAsync(mailData, new CancellationToken());
-                //await _emailService.SendMail(emailRequest);
+
                 if (result)
                 {
                     return StatusCode(StatusCodes.Status200OK, "Mail has successfully been sent.");
